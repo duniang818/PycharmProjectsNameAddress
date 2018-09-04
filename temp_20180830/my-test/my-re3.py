@@ -8,7 +8,7 @@ class StringProcess(object):
         self.invalid_span = r'[因为请电话（，,(].*?[)）.。]'
         self.bracket = r"[(（）)]*"
         self.bracket_content = r"[（(](.*?)[)）]"
-        self.invalid_text = r"[电话|联系|谢谢]"
+        self.invalid_text = r"电话|联系|谢谢|大门|进去|对面|附近|rn手机号|路口往.*路"
 
     def invalid_characters(self, string=None):
         string = re.sub(self.invalid_single, '', string)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # r = instring.invalid_characters(s)
     # print('after string:', r)
 
-    f = '广西联系前锋路三区5栋2单元102室电话'
+    f = '先锋路街道二院路口往西路南桃园街202号运河花行'
     s = '广西壮族自治'
     # r = instring.find_repeated(f, s)
     r = re.sub(instring.invalid_text, '', f)

@@ -428,7 +428,7 @@ def read_standard_data():
     global standard
     standard = pd.read_csv('../source/area_code.csv', low_memory=False, dtype=str)
     global area_village
-    area_village = pd.read_csv('../source/area_village.csv', header=1, low_memory=False, dtype=str, names=['parent_code', 'name', 'code'])
+    area_village = pd.read_csv('../source/village.csv', header=1, low_memory=False, dtype=str, names=['parent_code', 'name', 'code'])
     # global changes
     # c = pd.read_csv('name_change.csv', low_memory=False)
     # changes = c.filter(items=['county_name_old', 'county_name'])

@@ -106,5 +106,6 @@ def mysimilar():
 
 
 if __name__ == '__main__':
-    mydiff()
-    # mysimilar()
+    # mydiff()
+    for i in range(4, -1, -1):
+        print(i)

@@ -12,6 +12,8 @@ import pymysql, re
 from multiprocessing import Pool
 
 
+base_path = '../output_data/'
+my_data_path = '{}new/'.format(base_path)
 
 def pd_mysql():
     conn = pymysql.connect(host="localhost", user="root", passwd="yto2018", db='area_code', charset="utf8",
@@ -29,7 +31,7 @@ def pd_mysql():
     df = pd.read_sql(sql, con=conn).drop_duplicates()
     # print(df.head())
 
-    df.to_csv("../source/area_village.csv", index=False)
+    df.to_csv("../source/village.csv", index=False)
     conn.close()
 
 
@@ -134,19 +136,72 @@ def find_repeated(first, second):
 
 def read_standard_data():
 
-        standard = pd.read_csv('area_code_2017.csv', na_filter=False, low_memory=False)
-        standard[['province_code', 'city_code', 'county_code', 'town_code']] = standard[['province_code', 'city_code', 'county_code', 'town_code']].astype(str)
+        standard = pd.read_csv('../source/area_code.csv', header=0, na_filter=False, low_memory=False)
+        # standard[['province_code', 'city_code', 'county_code', 'town_code']] = standard[['province_code', 'city_code', 'county_code', 'town_code']].astype(str)
 
+        # print(standard.filter(items=['province', 'province_code']))
+        province = standard.iloc[:, [0, 1]].drop_duplicates()
+        province.rename(columns={'province': 'name', 'province_code': 'code'}, inplace=True)
+        province.to_csv('../source/province.csv', index=False, encoding='utf-8')
+
+        city = standard.iloc[:, [1, 2, 3]].drop_duplicates()
+        city.rename(columns={'province_code': 'parent_code', 'city': 'name', 'city_code': 'code'}, inplace=True)
+        city.to_csv('../source/city.csv', index=False, encoding='utf-8')
+
+        county = standard.iloc[:, [3, 4, 5]].drop_duplicates()
+        county.rename(columns={'city_code': 'parent_code', 'county': 'name', 'county_code': 'code'}, inplace=True)
+        county.to_csv('../source/county.csv', index=False, encoding='utf-8')
+
+        town = standard.iloc[:, [5, 6, 7]].drop_duplicates()
+        town.rename(columns={'county_code': 'parent_code', 'town': 'name', 'town_code': 'code'}, inplace=True)
+        town.to_csv('../source/town.csv', index=False, encoding='utf-8')
         # s = find_repeated('北京', standard.province_code)
-        # print(s)
+        # print(s
         # print('standard:', standard.head())
-        standard.to_csv('area_code.csv', index=False, encoding='utf-8')
+        # standard.to_csv('area_code.csv', index=False, encoding='utf-8')
 
         # print('where:', standard[standard['county'] == '万源市']['city'].get_values()[0])
         # c = standard.loc[standard['county'] == '万源市']
         # print(c)
+def rewrite_my_standard_data():
+    try:
+        team = pd.read_csv('{}{}'.format(my_data_path, 'team.csv'), header=0, na_filter=False, low_memory=False,
+                              names=['parent_code', 'name', 'code'], dtype=str).drop_duplicates()
+        team.to_csv('../output_data/team.csv', index=False, mode='a+')
+        school = pd.read_csv('{}{}'.format(my_data_path, 'school.csv'), header=0, na_filter=False, low_memory=False,
+                           names=['parent_code', 'name', 'code'], dtype=str).drop_duplicates()
+        school.to_csv('../output_data/school.csv', index=False)
+
+        unit = pd.read_csv('{}{}'.format(my_data_path, 'unit.csv'), header=0, na_filter=False, low_memory=False,
+                             names=['parent_code', 'name', 'code'], dtype=str).drop_duplicates()
+        unit.to_csv('../output_data/unit.csv', index=False)
+
+        floor = pd.read_csv('{}{}'.format(my_data_path, 'floor.csv'), header=0, na_filter=False, low_memory=False,
+                             names=['parent_code', 'name', 'code'], dtype=str).drop_duplicates()
+        floor.to_csv('../output_data/floor.csv', index=False)
+
+        room = pd.read_csv('{}{}'.format(my_data_path, 'room.csv'), header=0, na_filter=False, low_memory=False,
+                             names=['parent_code', 'name', 'code'], dtype=str).drop_duplicates()
+        room.to_csv('../output_data/room.csv', index=False)
+    except FileNotFoundError as e:
+        print(e)
+
+def df_join():
+    village = pd.read_csv('{}{}'.format('../source/', 'village.csv'), header=0, na_filter=False, low_memory=False,
+                          names=['parent_code', 'name', 'code'], dtype=str)
+
+    my_village = pd.read_csv('{}{}'.format(my_data_path, 'my_village.csv'), names=['parent_code', 'name', 'code'],
+                             sep='\t', low_memory=False, header=0,
+                             dtype=str).drop_duplicates()
+    village = village.append(my_village).drop_duplicates()
+    village.to_csv('../output_data/village.csv', index=False)
+    # print(village.tail())
+
 if __name__ == '__main__':
+    rewrite_my_standard_data()
     # read_standard_data()
+    # read_village()
+    # df_join()
     # pd_mysql()
     # d = [['32', '33', '12'], ['30', '33', '12']]
     # df = pd.DataFrame(columns=['a', 'b', 'c'], dtype=str)
@@ -157,8 +212,6 @@ if __name__ == '__main__':
     # # df.a = '1'
     # print(df)
     # print(int(df[0].max()) + 1)
-    df = pd.read_csv('../output_data/floor.csv', names=['parent_code', 'name', 'code'], header=None,  sep='\t')
-    # print(df.get('name').str.startswith('1单元'), df.get('name').str.find('1单元'))
     # print(df.where(df.get('name').str.find('单元') != -1, df, axis=0))
     # print(df.query(df.name.str.find('单元')!=-1))
-    print(df[df.name.str.find('1单元') == 0])
+    # print(df[df.name.str.find('1单元') == 0])
